@@ -1,12 +1,15 @@
 var express = require('express');
 var router = express.Router();
 
-var baseUrl = 'http://jira.dealeron.com:8080';
+var credentials = require('./credentials');
+
+
+var baseUrl = 'https://jira.dealeron.com';
 // Provide user credentials, which will be used to log in to JIRA.
 var loginArgs = {
         data: {
-                "username": "admin",
-                "password": "admin"
+                "username": credentials.username,
+                "password": credentials.password
         },
         headers: {
                 "Content-Type": "application/json"
@@ -15,6 +18,7 @@ var loginArgs = {
 var Client = require('node-rest-client').Client;
 client = new Client();
 
+
 var session = undefined;
 
 
@@ -22,7 +26,6 @@ var session = undefined;
 router.get('/', function(req, res, next) {
 
     console.log("attempting login");
-    console.log("Args: " + JSON.stringify(loginArgs));
     client.post(baseUrl +"/rest/auth/1/session", loginArgs, function(data, response){
             console.log("Status: " + response.statusCode);
             if (response.statusCode == 200) {
