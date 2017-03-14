@@ -51,7 +51,8 @@ var JiraBot = (function() {
         },
         /*  
             execParams = {
-               jql: string
+               action: string
+               data: object
             }
         */
         execute: function(execParams) {
