@@ -7,6 +7,50 @@ var JiraBot = (function() {
     var session = undefined;
 
     var baseUrl = "";
+
+    var searchFunction = function(searchParams) {
+        // Get the session information and store it in a cookie in the header
+            var searchArgs = {
+                    headers: {
+                            // Set the cookie from the session information
+                            cookie: session.name + '=' + session.value,
+                            "Content-Type": "application/json"
+                    },
+                    data: {
+                            // Provide additional data for the JIRA search. You can modify the JQL to search for whatever you want.
+                            jql: searchParams.jql
+                    }
+            };
+            // Make the request return the search results, passing the header information including the cookie.
+            return client.postPromise(baseUrl +"/rest/api/2/search", searchArgs);
+    };
+
+    var createFunction = function(createParams) {
+        // Get the session information and store it in a cookie in the header
+            var createArgs = {
+                headers: {
+                        // Set the cookie from the session information
+                        cookie: session.name + '=' + session.value,
+                        "Content-Type": "application/json"
+                },
+                data: {
+                    "fields": {
+                        "project":
+                        {
+                            "key": createParams.projectKey
+                        },
+                        "summary": createParams.summary,
+                        "description": createParams.description,
+                        "issuetype": {
+                            "name": createParams.issueTypeName
+                        }
+                    }
+                }
+            };
+            
+            return client.postPromise(baseUrl +"/rest/api/2/issue", searchArgs);
+    };
+
     return {
         /*
             initParams = {
@@ -59,25 +103,19 @@ var JiraBot = (function() {
             if (!isInit) return new Promise(function(resolve, reject) { reject({results: undefined, statusCode: 400, message: 'JiraBot has not been initialized. Init first.'}); });
             if (typeof session === 'undefined') return new Promise(function(resolve, reject) { reject({results: undefined, statusCode: 403, message: 'JiraBot has not been authenticated. Auth first.'}); });
 
-            // Get the session information and store it in a cookie in the header
-            var searchArgs = {
-                    headers: {
-                            // Set the cookie from the session information
-                            cookie: session.name + '=' + session.value,
-                            "Content-Type": "application/json"
-                    },
-                    data: {
-                            // Provide additional data for the JIRA search. You can modify the JQL to search for whatever you want.
-                            jql: execParams.jql
-                    }
-            };
-            // Make the request return the search results, passing the header information including the cookie.
-            return client.postPromise(baseUrl +"/rest/api/2/search", searchArgs).then(function(searchResults) {
+            var functionToRun = undefined;
+            if (exexParams.action === 'create') {
+                functionToRun = createFunction;
+            } else {
+                functionToRun = searchFunction;
+            }
+
+            return functionToRun(execParams.data).then(function(results) {
                 return new Promise(function (resolve, reject) {
-                    if (searchResults.response.statusCode == 200) {
-                        resolve({results: searchResults.data, statusCode: 200, message: "Results Found" });
+                    if (results.response.statusCode == 200) {
+                        resolve({results: results.data, statusCode: 200, message: "Results Found" });
                     } else {
-                        reject({results: undefined, statusCode: searchResults.response.statusCode, message: searchResults.response.message });
+                        reject({results: undefined, statusCode: results.response.statusCode, message: results.response.message });
                     }
                 });
             });
