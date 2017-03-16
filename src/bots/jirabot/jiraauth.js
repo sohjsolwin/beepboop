@@ -28,7 +28,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/search', function(req, res, next) {
-    JiraBot.execute({jql: 'type=Bug AND status=Closed'}).then(function(execRes) {
+    JiraBot.execute({data: {jql: 'type=Bug AND status=Closed'}}).then(function(execRes) {
         if (execRes.statusCode == 200) {
             console.log("search success");
             res.json(execRes);

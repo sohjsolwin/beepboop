@@ -104,7 +104,7 @@ var JiraBot = (function() {
             if (typeof session === 'undefined') return new Promise(function(resolve, reject) { reject({results: undefined, statusCode: 403, message: 'JiraBot has not been authenticated. Auth first.'}); });
 
             var functionToRun = undefined;
-            if (exexParams.action === 'create') {
+            if (execParams.action === 'create') {
                 functionToRun = createFunction;
             } else {
                 functionToRun = searchFunction;
